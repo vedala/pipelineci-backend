@@ -1,10 +1,11 @@
 import "./config.js";
 import express from "express";
+import authorize from "./authorization.js";
 
 const app = express();
 const port = 3001;
 
-app.get("/organizations", async (req, res) => {
+app.get("/organizations", authorize, async (req, res) => {
   res.send([
     {
       "id": 1,
@@ -17,7 +18,7 @@ app.get("/organizations", async (req, res) => {
   ]);
 });
 
-app.post("/organizations", async (req, res) => {
+app.post("/organizations", authorize, async (req, res) => {
   res.send({
     "message": "Organization created"
   });
