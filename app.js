@@ -35,7 +35,7 @@ app.get("/callback-endpoint", async (req, res) => {
 console.log("installationId=", installationId);
 console.log("setupAction=", setupAction);
 
-  res.redirect('http://localhost:4000/callback-redirect-endpoint');
+  res.redirect('http://localhost:4000/home');
 });
 
 app.listen(port, () => {
