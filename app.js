@@ -28,7 +28,7 @@ app.post("/organizations", authorize, async (req, res) => {
   });
 });
 
-app.get("/callback-endpoint", async (req, res) => {
+app.get("/setup-endpoint", async (req, res) => {
   const installationId = req.query?.installation_id;
   const setupAction = req.query?.setup_action;
 
@@ -36,6 +36,11 @@ console.log("installationId=", installationId);
 console.log("setupAction=", setupAction);
 
   res.redirect('http://localhost:4000/home');
+});
+
+app.get("/callback-endpoint", async (req, res) => {
+console.log("callback-endpoint: req.query=", req.query);
+res.redirect('http://localhost:4000/home');
 });
 
 app.listen(port, () => {
