@@ -20,16 +20,11 @@ app.use(express.json())
 app.use(cors())
 
 app.get("/organizations", authorize, async (req, res) => {
-  res.send([
-    {
-      "id": 1,
-      "name": "org1"
-    },
-    {
-      "id": 2,
-      "name": "org2"
-    }
-  ]);
+  const rows = await knex(process.env.ORGANIZATIONS_TABLE_NAME).select('id', 'name')
+    .orderBy('id')
+    .catch((err) => { console.error(err); throw err; });
+
+  res.send(rows);
 });
 
 app.post("/organizations", authorize, async (req, res) => {
