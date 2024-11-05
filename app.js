@@ -5,11 +5,15 @@ import fs from "fs";
 import authorize from "./authorization.js";
 import { Octokit } from "@octokit/rest";
 import { createAppAuth } from "@octokit/auth-app";
+import getKnexObj from "./knexObj.js";
 
 const app = express();
+
 const port = process.env.PORT;
 const privateKeyPath = process.env.PRIVATE_KEY_PATH;
 const GITHUB_APP_IDENTIFIER = process.env.GITHUB_APP_IDENTIFIER;
+
+const knex = getKnexObj();
 
 const privateKey = fs.readFileSync(privateKeyPath, "utf8");
 app.use(express.json())
@@ -29,6 +33,10 @@ app.get("/organizations", authorize, async (req, res) => {
 });
 
 app.post("/organizations", authorize, async (req, res) => {
+  const organizationName = req.body.orgName;
+  const insertOrgsResponse = await knex(process.env.ORGANIZATIONS_TABLE_NAME).insert({name: organizationName}).returning('id')
+  .catch((err) => { console.error(err); throw err });
+
   res.send({
     "message": "Organization created"
   });
