@@ -33,9 +33,7 @@ app.post("/organizations", authorize, async (req, res) => {
   const insertOrgsResponse = await knex(process.env.ORGANIZATIONS_TABLE_NAME).insert({name: organizationName}).returning('id')
   .catch((err) => { console.error(err); throw err });
 
-  res.send({
-    "message": "Organization created"
-  });
+  res.send(JSON.stringify(insertOrgsResponse[0]));
 });
 
 app.get("/setup-endpoint", async (req, res) => {
@@ -53,6 +51,7 @@ app.get("/callback-endpoint", async (req, res) => {
 
 console.log("callback-endpoint: req.query=", req.query);
   const installationId = req.query?.installation_id;
+  const organizationId = req.query.state;
 
   const octokit = new Octokit({
     authStrategy: createAppAuth,
@@ -68,7 +67,7 @@ console.log("callback-endpoint: req.query=", req.query);
   const repos = reposResponse.data.repositories.map(repo => {
     return {
       gh_repo_id: repo.id,
-      organization_id: '999999',
+      organization_id: Number(organizationId),
       name: repo.name,
       full_name: repo.full_name,
       default_branch: repo.default_branch,
