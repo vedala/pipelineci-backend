@@ -6,6 +6,7 @@ import authorize from "./authorization.js";
 import { Octokit } from "@octokit/rest";
 import { createAppAuth } from "@octokit/auth-app";
 import getKnexObj from "./knexObj.js";
+import { saveRepos } from "./handlers.js";
 
 const app = express();
 
@@ -63,8 +64,23 @@ console.log("callback-endpoint: req.query=", req.query);
   });
 
   const reposResponse = await octokit.request("GET /installation/repositories");
-console.log("reposResponse=", reposResponse.data);
 
+  const repos = reposResponse.data.repositories.map(repo => {
+    return {
+      gh_repo_id: repo.id,
+      organization_id: '999999',
+      name: repo.name,
+      full_name: repo.full_name,
+      default_branch: repo.default_branch,
+    };
+  })
+
+  console.log("repos=", repos);
+
+  // save repos to database
+  const insertedReposIdArr = await saveRepos(repos);
+
+console.log("insertedReposIdArr=", insertedReposIdArr);
 res.redirect('http://localhost:4000/home');
 });
 
