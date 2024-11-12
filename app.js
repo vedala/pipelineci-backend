@@ -13,6 +13,7 @@ const app = express();
 const port = process.env.PORT;
 const privateKeyPath = process.env.PRIVATE_KEY_PATH;
 const GITHUB_APP_IDENTIFIER = process.env.GITHUB_APP_IDENTIFIER;
+const FRONTEND_URL = process.env.FRONTEND_URL;
 
 const knex = getKnexObj();
 
@@ -44,7 +45,7 @@ app.get("/setup-endpoint", async (req, res) => {
 // console.log("setupAction=", setupAction);
   console.log("received by setup-endpoint");
 
-  res.redirect('http://localhost:4000/home');
+  // res.redirect('http://localhost:4000/home');
 });
 
 app.get("/callback-endpoint", async (req, res) => {
@@ -80,7 +81,7 @@ console.log("callback-endpoint: req.query=", req.query);
   const insertedReposIdArr = await saveRepos(repos);
 
 console.log("insertedReposIdArr=", insertedReposIdArr);
-res.redirect('http://localhost:4000/home');
+res.redirect(`${FRONTEND_URL}`);
 });
 
 app.listen(port, () => {
