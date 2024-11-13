@@ -1,0 +1,29 @@
+variable "AUTH0_AUDIENCE" {
+  type = string
+  default = "https://pipelineci.com"
+  sensitive = true
+}
+
+variable "AUTH0_ISSUER_BASE_URL" {
+  type = string
+  default = "https://pipelineci.us.auth0.com"
+  sensitive = true
+}
+
+variable "DB_URL" {
+  type = string
+  default = ""
+  sensitive = true
+}
+
+variable "NODE_ENV" {
+  type = string
+  default = "production"
+  sensitive = false
+}
+
+variable "SUBDOMAIN_NAME" {
+  type = string
+  default = "api.pipelineci.com"
+  sensitive = false
+}
