@@ -1,3 +1,9 @@
 node_modules/
 .env
 mydb.sqlite
+
+# terraform
+.terraform
+*.tfstate
+*.tfstate.backup
+variables.tf
