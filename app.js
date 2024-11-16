@@ -52,7 +52,9 @@ app.get("/callback-endpoint", async (req, res) => {
 
 console.log("callback-endpoint: req.query=", req.query);
   const installationId = req.query?.installation_id;
-  const organizationId = req.query.state;
+  const stateObject = JSON.parse(req.query.state);
+  const organizationId = stateObject.orgId;
+  const redirectUrl = stateObject.redirectUrl;
 
   const octokit = new Octokit({
     authStrategy: createAppAuth,
@@ -81,7 +83,8 @@ console.log("callback-endpoint: req.query=", req.query);
   const insertedReposIdArr = await saveRepos(repos);
 
 console.log("insertedReposIdArr=", insertedReposIdArr);
-res.redirect(`${FRONTEND_URL}`);
+
+  res.redirect(redirectUrl);
 });
 
 app.listen(port, () => {
