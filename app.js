@@ -84,7 +84,7 @@ console.log("callback-endpoint: req.query=", req.query);
 
 console.log("insertedReposIdArr=", insertedReposIdArr);
 
-  res.redirect(redirectUrl);
+  res.redirect(`${redirectUrl}/home`);
 });
 
 app.listen(port, () => {
