@@ -202,7 +202,7 @@ resource "aws_security_group" "pipelineci_lb_sg" {
 
 data "aws_acm_certificate" "pipelineci_certificate" {
   domain      = "${var.SUBDOMAIN}.${var.DOMAIN_NAME}"
-  statuses    =  ["ISSUED"]
+  statuses    = ["ISSUED"]
   most_recent = true
 }
 
