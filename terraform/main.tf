@@ -201,7 +201,7 @@ resource "aws_security_group" "pipelineci_lb_sg" {
 }
 
 data "aws_acm_certificate" "pipelineci_certificate" {
-  domain      = var.SUBDOMAIN_NAME
+  domain      = "${var.SUBDOMAIN}.${var.DOMAIN_NAME}"
   statuses    = ["ISSUED"]
   most_recent = true
 }
@@ -211,19 +211,8 @@ resource "aws_lb_listener_certificate" "pipelineci_alb_certificate" {
   certificate_arn = data.aws_acm_certificate.pipelineci_certificate.arn
 }
 
-data "aws_route53_zone" "pipelineciZone" {
-  name          = "${var.SUBDOMAIN_NAME}."   // a dot appended
-  private_zone  = false
-}
 
-resource "aws_route53_record" "pipelineciRecord" {
-  zone_id = data.aws_route53_zone.pipelineciZone.zone_id
-  name    = var.BACKEND_DOMAIN_NAME
-  type    = "A"
-
-  alias {
-    name                    = aws_lb.pipelineci_alb.dns_name
-    zone_id                 = aws_lb.pipelineci_alb.zone_id
-    evaluate_target_health  = true
-  }
+output "pipelineci_alb" {
+  value = aws_lb.pipelineci_alb.dns_name
+  description = "Load balancer dns_name to add to CNAME for subdomain delegation"
 }
