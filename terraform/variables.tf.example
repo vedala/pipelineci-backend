@@ -22,8 +22,14 @@ variable "NODE_ENV" {
   sensitive = false
 }
 
-variable "SUBDOMAIN_NAME" {
+variable "DOMAIN_NAME" {
   type = string
-  default = "api.pipelineci.com"
+  default = "pipelineci.com"
+  sensitive = false
+}
+
+variable "SUBDOMAIN" {
+  type = string
+  default = "api"
   sensitive = false
 }
