@@ -1,7 +1,6 @@
 import "./config.js";
 import express from "express";
 import cors from 'cors';
-import fs from "fs";
 import authorize from "./authorization.js";
 import { Octokit } from "@octokit/rest";
 import { createAppAuth } from "@octokit/auth-app";
@@ -11,13 +10,12 @@ import { saveRepos } from "./handlers.js";
 const app = express();
 
 const port = process.env.PORT || 3000;
-const privateKeyPath = process.env.PRIVATE_KEY_PATH;
+const privateKey = process.env.GITHUB_APP_PRIVATE_KEY;
 const GITHUB_APP_IDENTIFIER = process.env.GITHUB_APP_IDENTIFIER;
 const FRONTEND_URL = process.env.FRONTEND_URL;
 
 const knex = getKnexObj();
 
-const privateKey = fs.readFileSync(privateKeyPath, "utf8");
 app.use(express.json())
 app.use(cors())
 
