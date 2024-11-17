@@ -10,7 +10,7 @@ import { saveRepos } from "./handlers.js";
 
 const app = express();
 
-const port = process.env.PORT;
+const port = process.env.PORT || 3000;
 const privateKeyPath = process.env.PRIVATE_KEY_PATH;
 const GITHUB_APP_IDENTIFIER = process.env.GITHUB_APP_IDENTIFIER;
 const FRONTEND_URL = process.env.FRONTEND_URL;
