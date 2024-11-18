@@ -33,3 +33,23 @@ variable "SUBDOMAIN" {
   default = "api"
   sensitive = false
 }
+
+variable "ORGANIZATIONS_TABLE_NAME" {
+  type = string
+  default = "organizations"
+  sensitive = false
+}
+
+
+variable "GITHUB_APP_IDENTIFIER" {
+  type = string
+  default = ""
+  sensitive = true
+}
+
+
+variable "GITHUB_APP_PRIVATE_KEY" {
+  type = string
+  default = ""
+  sensitive = true
+}
