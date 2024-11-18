@@ -328,6 +328,11 @@ resource "aws_iam_role_policy_attachment" "ecs_execution_attachment" {
   role        = aws_iam_role.ecs_execution_role.name
 }
 
+resource "aws_cloudwatch_log_group" "pipelineci_log_group" {
+  name              = "/ecs/pipelineci-backend"
+  retention_in_days = 7
+}
+
 resource "aws_ecs_task_definition" "pipelineci_task_definition" {
   family                    = "pipelineci-fargate-task"
   network_mode              = "awsvpc"
@@ -376,6 +381,14 @@ resource "aws_ecs_task_definition" "pipelineci_task_definition" {
           "value": var.GITHUB_APP_PRIVATE_KEY
         },
       ],
+      logConfiguration = {
+        logDriver = "awslogs"
+        options = {
+          awslogs-group         = aws_cloudwatch_log_group.pipelineci_log_group.name
+          awslogs-region        = "us-west-2"
+          awslogs-stream-prefix = "ecs"
+        }
+      }
     },
   ])
 }
