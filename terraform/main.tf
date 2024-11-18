@@ -255,3 +255,173 @@ output "pipelineci_db" {
   value       = aws_db_instance.pipelineci_db.endpoint
   description = "Database endpoint"
 }
+
+#
+# ECS
+#
+
+resource "aws_ecs_cluster" "pipelineci_cluster" {
+  name = "pipelineci-fargate-cluster"
+}
+
+resource "aws_iam_role" "ecs_execution_role" {
+  name = "ecs_execution_role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Action = "sts:AssumeRole",
+        Effect = "Allow",
+        Principal = {
+          Service = "ecs-tasks.amazonaws.com"
+        }
+      }
+    ]
+  })
+}
+
+resource "aws_iam_policy" "ecs_execution_policy" {
+  name = "ecs_execution_policy"
+  description = "ECS Execution Policy"
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Action = [
+          "ecs:ListTasks",
+          "ecs:DescribeTasks",
+          "ecs:StopTask",
+          "ecs:StartTask",
+        ],
+        Effect   = "Allow",
+        Resource = "*",
+      },
+      {
+        Action = [
+          "ecr:GetAuthorizationToken",
+          "ecr:BatchCheckLayerAvailability",
+          "ecr:GetDownloadUrlForLayer",
+          "ecr:GetRepositoryPolicy",
+          "ecr:GetRepositoryPolicy",
+          "ecr:BatchGetImage",
+        ],
+        Effect   = "Allow",
+        Resource = "*",
+      },
+      {
+        Action = [
+          "logs:CreateLogGroup",
+          "logs:CreateLogStream",
+          "logs:PutLogEvents",
+        ],
+        Effect   = "Allow",
+        Resource = "*",
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "ecs_execution_attachment" {
+  policy_arn  = aws_iam_policy.ecs_execution_policy.arn
+  role        = aws_iam_role.ecs_execution_role.name
+}
+
+resource "aws_ecs_task_definition" "pipelineci_task_definition" {
+  family                    = "pipelineci-fargate-task"
+  network_mode              = "awsvpc"
+  requires_compatibilities  = ["FARGATE"]
+  execution_role_arn        = aws_iam_role.ecs_execution_role.arn
+  cpu                       = "256"
+  memory                    = "512"
+
+  container_definitions = jsonencode([
+    {
+      name  = "pipelineci-container",
+      image = "888577039580.dkr.ecr.us-west-2.amazonaws.com/pipelineci-backend:0.1",
+      portMappings = [
+        {
+          containerPort = 3000,
+          hostPort      = 3000,
+        },
+      ],
+      environment = [
+        {
+          "name": "AUTH0_AUDIENCE",
+          "value": var.AUTH0_AUDIENCE
+        },
+        {
+          "name": "AUTH0_ISSUER_BASE_URL",
+          "value": var.AUTH0_ISSUER_BASE_URL
+        },
+        {
+          "name": "NODE_ENV",
+          "value": var.NODE_ENV
+        },
+        {
+          "name": "DB_URL",
+          "value": var.DB_URL
+        },
+        {
+          "name": "ORGANIZATIONS_TABLE_NAME",
+          "value": var.ORGANIZATIONS_TABLE_NAME
+        },
+        {
+          "name": "GITHUB_APP_IDENTIFIER",
+          "value": var.GITHUB_APP_IDENTIFIER
+        },
+        {
+          "name": "GITHUB_APP_PRIVATE_KEY",
+          "value": var.GITHUB_APP_PRIVATE_KEY
+        },
+      ],
+    },
+  ])
+}
+
+resource "aws_ecs_service" "pipelineci_service" {
+  name            = "pipelineci-fargate-service"
+  cluster         = aws_ecs_cluster.pipelineci_cluster.id
+  task_definition = aws_ecs_task_definition.pipelineci_task_definition.arn
+  desired_count   = 2
+  launch_type     = "FARGATE"
+
+  network_configuration {
+    subnets           = [aws_subnet.pipelineci_private_subnet_01.id, aws_subnet.pipelineci_private_subnet_02.id]
+    security_groups   = [aws_security_group.pipelineci_ecs_service_sg.id]
+    assign_public_ip  = false
+  }
+
+  load_balancer {
+    target_group_arn  = aws_lb_target_group.pipelineci_target_group.arn
+    container_name    = "pipelineci-container"
+    container_port    = 3000
+  }
+
+  depends_on = [
+                aws_ecs_task_definition.pipelineci_task_definition,
+                aws_lb_target_group.pipelineci_target_group
+              ]
+}
+
+resource "aws_security_group" "pipelineci_ecs_service_sg" {
+  name        = "pipelineci-ecs-service-sg"
+  description = "Security group for ECS service"
+
+  vpc_id = aws_vpc.pipelineci_vpc.id
+
+  ingress {
+    from_port   = 3000
+    to_port     = 3000
+    protocol    = "tcp"
+    security_groups = [aws_security_group.pipelineci_lb_sg.id]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"  # Allow all outbound traffic
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
