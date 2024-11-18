@@ -17,7 +17,11 @@ const FRONTEND_URL = process.env.FRONTEND_URL;
 const knex = getKnexObj();
 
 app.use(express.json())
-app.use(cors())
+app.use(cors({
+  origin: 'https://pipelineci.com',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
 app.get("/organizations", authorize, async (req, res) => {
   const rows = await knex(process.env.ORGANIZATIONS_TABLE_NAME).select('id', 'name')
