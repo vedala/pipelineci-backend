@@ -216,3 +216,37 @@ output "pipelineci_alb" {
   value = aws_lb.pipelineci_alb.dns_name
   description = "Load balancer dns_name to add to CNAME for subdomain delegation"
 }
+
+#
+# Database
+#
+
+resource "aws_db_instance" "pipelineci_db" {
+  allocated_storage    = 20
+  db_name              = "pipelinci_db"
+  engine               = "postgres"
+  engine_version       = "16.1"
+  instance_class       = "db.t3.micro"
+  username             = "ciadmin"
+  password             = "vEgGeCRW9wrSY768"
+  publicly_accessible  = false
+  skip_final_snapshot  = true
+
+  db_subnet_group_name = aws_db_subnet_group.pipelineci_postgres_subnet_group.name
+
+  tags = {
+    Name = "PipelineciPostgresDb"
+  }
+}
+
+resource "aws_db_subnet_group" "pipelineci_postgres_subnet_group" {
+  name       = "pipelineci-pg-subnet-group"
+  subnet_ids = [
+    aws_subnet.pipelineci_private_subnet_01.id,
+    aws_subnet.pipelineci_private_subnet_02.id
+  ]
+
+  tags = {
+    Name = "PipelineciPostgresSubnetGroup"
+  }
+}
