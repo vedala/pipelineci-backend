@@ -250,3 +250,8 @@ resource "aws_db_subnet_group" "pipelineci_postgres_subnet_group" {
     Name = "PipelineciPostgresSubnetGroup"
   }
 }
+
+output "pipelineci_db" {
+  value       = aws_db_instance.pipelineci_db.endpoint
+  description = "Database endpoint"
+}
