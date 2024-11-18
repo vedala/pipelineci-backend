@@ -23,6 +23,11 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
+app.get("/health", async (req, res) => {
+  res.status(200)
+  res.send("Backend is alive")
+});
+
 app.get("/organizations", authorize, async (req, res) => {
   const rows = await knex(process.env.ORGANIZATIONS_TABLE_NAME).select('id', 'name')
     .orderBy('id')
