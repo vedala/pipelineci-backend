@@ -16,11 +16,24 @@ const FRONTEND_URL = process.env.FRONTEND_URL;
 
 const knex = getKnexObj();
 
-app.use(express.json())
+app.use(express.json());
+
+let corsOrigin;
+let corsAllowedHeaders;
+
+if (process.env.NODE_ENV === 'development') {
+  corsOrigin = '*';
+  corsAllowedHeaders = ['Content-Type', 'Authorization', 'ngrok-skip-browser-warning'];
+} else {
+  corsOrigin = 'https://pipelineci.com';
+  corsAllowedHeaders = ['Content-Type', 'Authorization'];
+}
+
+console.log("corsOrigin=", corsOrigin);
 app.use(cors({
-  origin: 'https://pipelineci.com',
+  origin: corsOrigin,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  allowedHeaders: ['Content-Type', 'Authorization', 'ngrok-skip-browser-warning']
 }));
 
 app.get("/health", async (req, res) => {
