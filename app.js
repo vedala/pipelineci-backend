@@ -61,7 +61,11 @@ console.log("callback-endpoint: req.query=", req.query);
   const installationId = req.query?.installation_id;
   const stateObject = JSON.parse(req.query.state);
   const organizationId = stateObject.orgId;
-  const redirectUrl = stateObject.redirectUrl;
+  let redirectUrl = stateObject.redirectUrl;
+
+  if (process.env.NODE_ENV === "development") {
+    redirectUrl = process.env.CALLBACK_TUNNEL_URL;
+  }
 
   const octokit = new Octokit({
     authStrategy: createAppAuth,
