@@ -33,7 +33,7 @@ console.log("corsOrigin=", corsOrigin);
 app.use(cors({
   origin: corsOrigin,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'ngrok-skip-browser-warning']
+  allowedHeaders: corsAllowedHeaders
 }));
 
 app.get("/health", async (req, res) => {
