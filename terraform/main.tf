@@ -239,7 +239,7 @@ resource "aws_db_instance" "pipelineci_db" {
   engine_version       = "16.1"
   instance_class       = "db.t3.micro"
   username             = "ciadmin"
-  password             = "vEgGeCRW9wrSY768"
+  password             = var.DB_PASSWORD
   publicly_accessible  = false
   skip_final_snapshot  = true
 
