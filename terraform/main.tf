@@ -228,11 +228,6 @@ resource "aws_route53_record" "pipelineciRecord" {
   }
 }
 
-# output "pipelineci_alb" {
-#   value = aws_lb.pipelineci_alb.dns_name
-#   description = "Load balancer dns_name to add to CNAME for subdomain delegation"
-# }
-
 #
 # Database
 #
