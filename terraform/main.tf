@@ -236,7 +236,7 @@ resource "aws_db_instance" "pipelineci_db" {
   allocated_storage    = 20
   db_name              = "pipelinci_db"
   engine               = "postgres"
-  engine_version       = "16.1"
+  engine_version       = "16.3"
   instance_class       = "db.t3.micro"
   username             = "ciadmin"
   password             = var.DB_PASSWORD
@@ -376,10 +376,6 @@ resource "aws_ecs_task_definition" "pipelineci_task_definition" {
           "value": var.NODE_ENV
         },
         {
-          "name": "DB_URL",
-          "value": var.DB_URL
-        },
-        {
           "name": "ORGANIZATIONS_TABLE_NAME",
           "value": var.ORGANIZATIONS_TABLE_NAME
         },
@@ -391,6 +387,26 @@ resource "aws_ecs_task_definition" "pipelineci_task_definition" {
           "name": "GITHUB_APP_PRIVATE_KEY",
           "value": var.GITHUB_APP_PRIVATE_KEY
         },
+        {
+          "name": "DB_HOST",
+          "value": aws_db_instance.pipelineci_db.address
+        },
+        {
+          "name": "DB_USER",
+          "value": aws_db_instance.pipelineci_db.username
+        },
+        {
+          "name": "DB_PASSWORD",
+          "value": var.DB_PASSWORD
+        },
+        {
+          "name": "DB_NAME",
+          "value": aws_db_instance.pipelineci_db.db_name
+        },
+        {
+          "name": "DB_PORT",
+          "value": tostring(aws_db_instance.pipelineci_db.port)
+        }
       ],
       logConfiguration = {
         logDriver = "awslogs"
