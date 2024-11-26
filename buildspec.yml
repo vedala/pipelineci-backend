@@ -3,6 +3,7 @@ version: 0.2
 phases:
   pre_build:
     commands:
+      - docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
       - ACCOUNT_ID=$(aws sts get-caller-identity --query "Account" --output text)
   build:
     commands:
