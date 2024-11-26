@@ -305,6 +305,7 @@ resource "aws_iam_policy" "ecs_execution_policy" {
           "ecs:DescribeTasks",
           "ecs:StopTask",
           "ecs:StartTask",
+          "ecs:RunTask",
         ],
         Effect   = "Allow",
         Resource = "*",
