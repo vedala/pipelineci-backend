@@ -407,6 +407,10 @@ resource "aws_ecs_task_definition" "pipelineci_task_definition" {
         {
           "name": "DB_PORT",
           "value": tostring(aws_db_instance.pipelineci_db.port)
+        },
+        {
+          "name": "RDS_CERT_BUNDLE",
+          "value": var.RDS_CERT_BUNDLE
         }
       ],
       logConfiguration = {

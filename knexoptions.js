@@ -14,6 +14,10 @@ const knexEnvOptions = {
       password: process.env.DB_PASSWORD,
       database: process.env.DB_NAME,
       port: process.env.DB_PORT || 5432,
+      ssl: {
+        rejectUnauthorized: true,
+        ca: process.env.RDS_CERT_BUNDLE,
+      },
     }
   }
 }
