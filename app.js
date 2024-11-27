@@ -41,8 +41,7 @@ app.get("/health", async (req, res) => {
   res.send("Backend is alive")
 });
 
-// app.get("/organizations", authorize, async (req, res) => {
-app.get("/organizations", async (req, res) => {
+app.get("/organizations", authorize, async (req, res) => {
   let rows;
   try {
     rows = await knex.transaction(async (trx) => {
