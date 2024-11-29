@@ -42,18 +42,9 @@ app.get("/health", async (req, res) => {
 });
 
 app.get("/organizations", authorize, async (req, res) => {
-  let rows;
-  try {
-    rows = await knex.transaction(async (trx) => {
-      const result = await trx(process.env.ORGANIZATIONS_TABLE_NAME).select('id', 'name')
-        .orderBy('id');
-
-      return result;
-    });
-  } catch(error) {
-    console.error('Fetch from table failed:', error);
-    throw error;
-  }
+    const rows = await knex(process.env.ORGANIZATIONS_TABLE_NAME).select('id', 'name')
+    .orderBy('id')
+    .catch((err) => { console.error(err); throw err; });
 
   res.send(rows);
 });
