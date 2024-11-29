@@ -243,6 +243,7 @@ resource "aws_db_instance" "pipelineci_db" {
   publicly_accessible  = false
   skip_final_snapshot  = true
 
+  vpc_security_group_ids = [aws_security_group.pipelineci_rds_sg.id]
   db_subnet_group_name = aws_db_subnet_group.pipelineci_postgres_subnet_group.name
 
   tags = {
@@ -259,6 +260,28 @@ resource "aws_db_subnet_group" "pipelineci_postgres_subnet_group" {
 
   tags = {
     Name = "PipelineciPostgresSubnetGroup"
+  }
+}
+
+resource "aws_security_group" "pipelineci_rds_sg" {
+  name        = "pipelineci-rds-security-group"
+  description = "Security group for RDS"
+
+  vpc_id      = aws_vpc.pipelineci_vpc.id
+
+  ingress {
+    description     = "Allow ECS service to access RDS"
+    from_port       = 5432
+    to_port         = 5432
+    protocol        = "tcp"
+    security_groups = [aws_security_group.pipelineci_ecs_service_sg.id, aws_security_group.pipelineci_ecs_migrations_sg.id]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
   }
 }
 
