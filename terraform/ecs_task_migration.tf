@@ -139,3 +139,29 @@ resource "aws_ecs_task_definition" "pipelineci_migrations_task_definition" {
     },
   ])
 }
+
+resource "aws_security_group" "pipelineci_ecs_migrations_sg" {
+  name        = "pipelineci-ecs-migrations-sg"
+  description = "Security group for Migrations"
+
+  vpc_id = aws_vpc.pipelineci_vpc.id
+
+  ingress {
+    from_port   = 3000
+    to_port     = 3000
+    protocol    = "tcp"
+    security_groups = [aws_security_group.pipelineci_lb_sg.id]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"  # Allow all outbound traffic
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+output "pipelineci_ecs_migrations_sg" {
+  value       = aws_security_group.pipelineci_ecs_migrations_sg.id
+  description = "Migrations security group id"
+}
