@@ -2,58 +2,6 @@
 # ECS task for migrations
 #
 
-# resource "aws_ecs_cluster" "pipelineci_cluster" {
-#   name = "pipelineci-fargate-cluster"
-# }
-
-# resource "aws_iam_policy" "ecs_execution_policy" {
-#   name = "ecs_execution_policy"
-#   description = "ECS Execution Policy"
-
-#   policy = jsonencode({
-#     Version = "2012-10-17",
-#     Statement = [
-#       {
-#         Action = [
-#           "ecs:ListTasks",
-#           "ecs:DescribeTasks",
-#           "ecs:StopTask",
-#           "ecs:StartTask",
-#           "ecs:RunTask",
-#         ],
-#         Effect   = "Allow",
-#         Resource = "*",
-#       },
-#       {
-#         Action = [
-#           "ecr:GetAuthorizationToken",
-#           "ecr:BatchCheckLayerAvailability",
-#           "ecr:GetDownloadUrlForLayer",
-#           "ecr:GetRepositoryPolicy",
-#           "ecr:GetRepositoryPolicy",
-#           "ecr:BatchGetImage",
-#         ],
-#         Effect   = "Allow",
-#         Resource = "*",
-#       },
-#       {
-#         Action = [
-#           "logs:CreateLogGroup",
-#           "logs:CreateLogStream",
-#           "logs:PutLogEvents",
-#         ],
-#         Effect   = "Allow",
-#         Resource = "*",
-#       }
-#     ]
-#   })
-# }
-
-# resource "aws_iam_role_policy_attachment" "ecs_execution_attachment" {
-#   policy_arn  = aws_iam_policy.ecs_execution_policy.arn
-#   role        = aws_iam_role.ecs_execution_role.name
-# }
-
 resource "aws_cloudwatch_log_group" "pipelineci_migrations_log_group" {
   name              = "/ecs/pipelineci-backend-migrations"
   retention_in_days = 7
