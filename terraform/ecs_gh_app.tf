@@ -42,6 +42,10 @@ resource "aws_ecs_task_definition" "pipelineci_ghapp_task_definition" {
           "name": "GITHUB_APP_PRIVATE_KEY",
           "value": var.GITHUB_APP_PRIVATE_KEY
         },
+        {
+          "name": "PORT",
+          "value": var.GITHUB_APP_PORT
+        },
       ],
       logConfiguration = {
         logDriver = "awslogs"
