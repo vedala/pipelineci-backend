@@ -21,8 +21,8 @@ resource "aws_ecs_task_definition" "pipelineci_ghapp_task_definition" {
       image = "888577039580.dkr.ecr.us-west-2.amazonaws.com/pipelineci-gh-app:latest",
       portMappings = [
         {
-          containerPort = 3000,
-          hostPort      = 3000,
+          containerPort = 4000,
+          hostPort      = 4000,
         },
       ],
       environment = [
@@ -75,7 +75,7 @@ resource "aws_ecs_service" "pipelineci_ghapp_service" {
   load_balancer {
     target_group_arn  = aws_lb_target_group.pipelineci_ghapp_target_group.arn
     container_name    = "pipelineci-ghapp-container"
-    container_port    = 3000
+    container_port    = 4000
   }
 
   depends_on = [
@@ -91,8 +91,8 @@ resource "aws_security_group" "pipelineci_ghapp_ecs_service_sg" {
   vpc_id = aws_vpc.pipelineci_vpc.id
 
   ingress {
-    from_port   = 3000
-    to_port     = 3000
+    from_port   = 4000
+    to_port     = 4000
     protocol    = "tcp"
     security_groups = [aws_security_group.pipelineci_ghapp_lb_sg.id]
   }

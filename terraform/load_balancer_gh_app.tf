@@ -12,14 +12,14 @@ resource "aws_lb" "pipelineci_ghapp_alb" {
 
 resource "aws_lb_target_group" "pipelineci_ghapp_target_group" {
   name        = "pipelineci-ghapp-target-group"
-  port        = 3000
+  port        = 4000
   protocol    = "HTTP"
   vpc_id      = aws_vpc.pipelineci_vpc.id
   target_type = "ip"
 
   health_check {
     path                = "/health"
-    port                = 3000
+    port                = 4000
     protocol            = "HTTP"
     healthy_threshold   = 3
     unhealthy_threshold = 3
