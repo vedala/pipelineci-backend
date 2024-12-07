@@ -68,7 +68,7 @@ resource "aws_ecs_service" "pipelineci_ghapp_service" {
 
   network_configuration {
     subnets           = [aws_subnet.pipelineci_private_subnet_01.id, aws_subnet.pipelineci_private_subnet_02.id]
-    security_groups   = [aws_security_group.pipelineci_ecs_service_sg.id]
+    security_groups   = [aws_security_group.pipelineci_ghapp_ecs_service_sg.id]
     assign_public_ip  = false
   }
 
