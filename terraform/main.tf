@@ -14,6 +14,10 @@ provider "aws" {
   profile =  "kv97usr1"
 }
 
+locals {
+  az_count = 2
+}
+
 #
 # VPC
 #
@@ -70,9 +74,9 @@ resource "aws_route_table" "pipelineci_public_rt" {
   vpc_id = aws_vpc.pipelineci_vpc.id
 }
 
-resource "aws_route_table" "pipelineci_private_rt" {
-  vpc_id = aws_vpc.pipelineci_vpc.id
-}
+# resource "aws_route_table" "pipelineci_private_rt" {
+#   vpc_id = aws_vpc.pipelineci_vpc.id
+# }
 
 resource "aws_route" "pipelineci_public_route" {
   route_table_id          = aws_route_table.pipelineci_public_rt.id
@@ -90,29 +94,149 @@ resource "aws_route_table_association" "pipelineci_subnet_association_pub02" {
   route_table_id  = aws_route_table.pipelineci_public_rt.id
 }
 
-resource "aws_route_table_association" "pipelineci_subnet_association_priv01" {
-  subnet_id       = aws_subnet.pipelineci_private_subnet_01.id
-  route_table_id  = aws_route_table.pipelineci_private_rt.id
+# resource "aws_route_table_association" "pipelineci_subnet_association_priv01" {
+#   subnet_id       = aws_subnet.pipelineci_private_subnet_01.id
+#   route_table_id  = aws_route_table.pipelineci_private_rt.id
+# }
+
+# resource "aws_route_table_association" "pipelineci_subnet_association_priv02" {
+#   subnet_id       = aws_subnet.pipelineci_private_subnet_02.id
+#   route_table_id  = aws_route_table.pipelineci_private_rt.id
+# }
+
+# resource "aws_eip" "pipelineci_vpc_eip" {
+#   instance = null
+# }
+
+# resource "aws_nat_gateway" "pipelineci_vpc_nat_gw" {
+#   allocation_id = aws_eip.pipelineci_vpc_eip.id
+#   subnet_id     = aws_subnet.pipelineci_public_subnet_01.id
+# }
+
+# resource "aws_route" "pipelineci_private_subnet_route" {
+#   route_table_id          = aws_route_table.pipelineci_private_rt.id
+#   destination_cidr_block  = "0.0.0.0/0"
+#   nat_gateway_id          = aws_nat_gateway.pipelineci_vpc_nat_gw.id
+# }
+
+data "aws_availability_zones" "avail_zones" {}
+
+data "aws_ami" "amazon_nat_ami" {
+  most_recent = true
+
+  filter {
+    name   = "name"
+    values = ["amzn-ami-vpc-nat-*-x86_64-ebs"]
+  }
 }
 
-resource "aws_route_table_association" "pipelineci_subnet_association_priv02" {
-  subnet_id       = aws_subnet.pipelineci_private_subnet_02.id
-  route_table_id  = aws_route_table.pipelineci_private_rt.id
+resource "aws_autoscaling_group" "pipelineci_nat_inst" {
+  count              = "${local.az_count}"
+  name               = "nat-inst-asg-${count.index}"
+  desired_capacity   = 1
+  min_size           = 1
+  max_size           = 1
+  availability_zones = ["${element(data.aws_availability_zones.avail_zones.names, count.index)}"]
+
+  mixed_instances_policy {
+    instances_distribution {
+      on_demand_base_capacity                  = 0
+      on_demand_percentage_above_base_capacity = 0
+    }
+
+    launch_template {
+      launch_template_specification {
+        launch_template_id = "${element(aws_launch_template.pipelineci_nat_inst.*.id, count.index)}"
+        version            = "$Latest"
+      }
+
+      dynamic "override" {
+        for_each = ["t2.micro"]
+
+        content {
+          instance_type = "${override.value}"
+        }
+      }
+    }
+  }
 }
 
-resource "aws_eip" "pipelineci_vpc_eip" {
-  instance = null
+resource "aws_security_group" "pipelineci_nat_inst_sg" {
+  name        = "pipelineci-nat-inst-sg"
+  description = "Security group for NAT instances"
+
+  vpc_id = aws_vpc.pipelineci_vpc.id
+
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    from_port   = 1024
+    to_port     = 65535
+    protocol    = "tcp"
+    cidr_blocks = [aws_subnet.pipelineci_private_subnet_01.id, aws_subnet.pipelineci_private_subnet_02.id]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 }
 
-resource "aws_nat_gateway" "pipelineci_vpc_nat_gw" {
-  allocation_id = aws_eip.pipelineci_vpc_eip.id
-  subnet_id     = aws_subnet.pipelineci_public_subnet_01.id
+resource "aws_network_interface" "pipelineci_nat_eni" {
+  count             = "${local.az_count}"
+  security_groups   = ["${aws_security_group.pipelineci_nat_inst_sg.id}"]
+  subnet_id         = "aws_subnet.pipelineci_public_subnet_0${count.index+1}"
+  source_dest_check = false
 }
 
-resource "aws_route" "pipelineci_private_subnet_route" {
-  route_table_id          = aws_route_table.pipelineci_private_rt.id
-  destination_cidr_block  = "0.0.0.0/0"
-  nat_gateway_id          = aws_nat_gateway.pipelineci_vpc_nat_gw.id
+resource "aws_launch_template" "pipelineci_nat_inst" {
+  count       = "${local.az_count}"
+  name_prefix = "nat-instance-${count.index}"
+  image_id    = "${data.aws_ami.amazon_nat_ami.id}"
+
+  network_interfaces {
+    delete_on_termination = false
+    network_interface_id  = "${element(aws_network_interface.pipelineci_nat_eni.*.id, count.index)}"
+  }
+}
+
+resource "aws_route_table" "pipelineci_private_rt" {
+  count  = "${local.az_count}"
+  vpc_id = "${aws_vpc.pipelineci_vpc.id}"
+}
+
+resource "aws_route_table_association" "pipelineci_subnet_association_private" {
+  count           = "${local.az_count}"
+  subnet_id       = "aws_subnet.pipelineci_private_subnet_0${count.index+1}.id"
+  route_table_id  = "${element(aws_route_table.pipelineci_private_rt.*.id, count.index)}"
+}
+
+resource "aws_route" "pipelineci_private_route" {
+  count                  = "${local.az_count}"
+  destination_cidr_block = "0.0.0.0/0"
+  route_table_id         = "${element(aws_route_table.pipelineci_private_rt.*.id, count.index)}"
+  network_interface_id   = "${element(aws_network_interface.pipelineci_nat_eni.*.id, count.index)}"
 }
 
 #
