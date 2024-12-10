@@ -16,6 +16,12 @@ provider "aws" {
 
 locals {
   az_count = 2
+  public_subnets = [
+    aws_subnet.pipelineci_public_subnet_01, aws_subnet.pipelineci_public_subnet_02
+  ]
+  private_subnets = [
+    aws_subnet.pipelineci_private_subnet_01, aws_subnet.pipelineci_private_subnet_02
+  ]
 }
 
 #
@@ -30,6 +36,7 @@ resource "aws_subnet" "pipelineci_public_subnet_01" {
   vpc_id            = aws_vpc.pipelineci_vpc.id
   cidr_block        = "10.0.1.0/24"
   availability_zone = "us-west-2a"
+  # map_public_ip_on_launch = true
 
   tags = {
     Name = "pipelineci_public_subnet_01"
@@ -40,6 +47,7 @@ resource "aws_subnet"  "pipelineci_public_subnet_02" {
   vpc_id            = aws_vpc.pipelineci_vpc.id
   cidr_block        = "10.0.2.0/24"
   availability_zone = "us-west-2b"
+  # map_public_ip_on_launch = true
 
   tags = {
     Name = "pipelineci_public_subnet_02"
@@ -188,11 +196,18 @@ resource "aws_security_group" "pipelineci_nat_inst_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+  # ingress {
+  #   from_port   = 1024
+  #   to_port     = 65535
+  #   protocol    = "tcp"
+  #   cidr_blocks = [aws_subnet.pipelineci_private_subnet_01.cidr_block, aws_subnet.pipelineci_private_subnet_02.cidr_block]
+  # }
+
   ingress {
-    from_port   = 1024
+    from_port   = 0
     to_port     = 65535
     protocol    = "tcp"
-    cidr_blocks = [aws_subnet.pipelineci_private_subnet_01.id, aws_subnet.pipelineci_private_subnet_02.id]
+    cidr_blocks = [aws_subnet.pipelineci_private_subnet_01.cidr_block, aws_subnet.pipelineci_private_subnet_02.cidr_block]
   }
 
   egress {
@@ -206,8 +221,14 @@ resource "aws_security_group" "pipelineci_nat_inst_sg" {
 resource "aws_network_interface" "pipelineci_nat_eni" {
   count             = "${local.az_count}"
   security_groups   = ["${aws_security_group.pipelineci_nat_inst_sg.id}"]
-  subnet_id         = "aws_subnet.pipelineci_public_subnet_0${count.index+1}"
+  subnet_id         = local.public_subnets[count.index].id
   source_dest_check = false
+}
+
+resource "aws_eip" "pipelineci_eip" {
+  count             = "${local.az_count}"
+  vpc               = true
+  network_interface = "${element(aws_network_interface.pipelineci_nat_eni.*.id, count.index)}"
 }
 
 resource "aws_launch_template" "pipelineci_nat_inst" {
@@ -228,7 +249,7 @@ resource "aws_route_table" "pipelineci_private_rt" {
 
 resource "aws_route_table_association" "pipelineci_subnet_association_private" {
   count           = "${local.az_count}"
-  subnet_id       = "aws_subnet.pipelineci_private_subnet_0${count.index+1}.id"
+  subnet_id       = local.private_subnets[count.index].id
   route_table_id  = "${element(aws_route_table.pipelineci_private_rt.*.id, count.index)}"
 }
 
@@ -577,7 +598,7 @@ resource "aws_ecs_service" "pipelineci_service" {
   cluster         = aws_ecs_cluster.pipelineci_cluster.id
   task_definition = aws_ecs_task_definition.pipelineci_task_definition.arn
   desired_count   = 2
-  launch_type     = "FARGATE"
+  # launch_type     = "FARGATE"
 
   capacity_provider_strategy {
     capacity_provider = "FARGATE_SPOT"
