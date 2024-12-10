@@ -64,7 +64,7 @@ resource "aws_ecs_service" "pipelineci_ghapp_service" {
   cluster         = aws_ecs_cluster.pipelineci_cluster.id
   task_definition = aws_ecs_task_definition.pipelineci_ghapp_task_definition.arn
   desired_count   = 2
-  launch_type     = "FARGATE"
+  # launch_type     = "FARGATE"
 
   capacity_provider_strategy {
     capacity_provider = "FARGATE_SPOT"
