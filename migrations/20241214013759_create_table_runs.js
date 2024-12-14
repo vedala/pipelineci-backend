@@ -4,7 +4,7 @@
  */
 export const up = function(knex) {
   return knex.schema
-    .createTable('run', (table) => {
+    .createTable('runs', (table) => {
       table.increments('id')
       table.string('project_id')
       table.string('owner')
