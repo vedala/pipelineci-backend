@@ -8,10 +8,6 @@ export const up = function(knex) {
       table.increments('id')
       table.string('organization_id')
       table.string('name')
-      table.string('owner')
-      table.string('repo')
-      table.string('sha')
-      table.string('branch')
     });
 };
 
