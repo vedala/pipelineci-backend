@@ -57,6 +57,14 @@ app.post("/organizations", authorize, async (req, res) => {
   res.send(JSON.stringify(insertOrgsResponse[0]));
 });
 
+app.post("/projects", authorize, async (req, res) => {
+  const projectName = req.body.projectName;
+  const insertProjectsResponse = await knex(process.env.PROJECTS_TABLE_NAME).insert({name: projectName}).returning('id')
+  .catch((err) => { console.error(err); throw err });
+
+  res.send(JSON.stringify(insertProjectsResponse[0]));
+});
+
 app.get("/setup-endpoint", async (req, res) => {
   // const installationId = req.query?.installation_id;
 //   const setupAction = req.query?.setup_action;
