@@ -90,9 +90,9 @@ console.log("callback-endpoint: req.query=", req.query);
   const organizationId = stateObject.orgId;
   let redirectUrl = stateObject.redirectUrl;
 
-  if (process.env.NODE_ENV === "development") {
-    redirectUrl = process.env.CALLBACK_TUNNEL_URL;
-  }
+  // if (process.env.NODE_ENV === "development") {
+  //   redirectUrl = process.env.CALLBACK_TUNNEL_URL;
+  // }
 
   const octokit = new Octokit({
     authStrategy: createAppAuth,
