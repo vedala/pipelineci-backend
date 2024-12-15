@@ -51,7 +51,13 @@ app.get("/organizations", authorize, async (req, res) => {
 
 app.post("/organizations", authorize, async (req, res) => {
   const organizationName = req.body.orgName;
-  const insertOrgsResponse = await knex(process.env.ORGANIZATIONS_TABLE_NAME).insert({name: organizationName}).returning('id')
+  const userId = req.body.userId;
+  const insertOrgsResponse = await knex(process.env.ORGANIZATIONS_TABLE_NAME)
+    .insert({
+      name: organizationName,
+      user_id: userId,
+    })
+    .returning('id')
   .catch((err) => { console.error(err); throw err });
 
   res.send(JSON.stringify(insertOrgsResponse[0]));
