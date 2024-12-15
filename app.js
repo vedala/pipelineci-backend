@@ -103,6 +103,14 @@ console.log("callback-endpoint: req.query=", req.query);
     },
   });
 
+  const installationDetailsResponse = await octokit.request("GET /app/installations/{installation_id}", {
+    installation_id: installationId
+  });
+
+console.log("installationDetailsResponse.data=", installationDetailsResponse.data);
+
+  const owner = installationDetailsResponse.data.account.login;
+
   const reposResponse = await octokit.request("GET /installation/repositories");
 
   const repos = reposResponse.data.repositories.map(repo => {
@@ -121,6 +129,17 @@ console.log("callback-endpoint: req.query=", req.query);
   const insertedReposIdArr = await saveRepos(repos);
 
 console.log("insertedReposIdArr=", insertedReposIdArr);
+
+  // update organizations table with owner and git_provider
+
+  const updateCount = await knex(process.env.ORGANIZATIONS_TABLE_NAME)
+    .where('id', '=', organizationId)
+    .update({
+      owner,
+      git_provider: 'GITHUB'
+    });
+
+console.log(`${updateCount} record(s) updated.`);
 
   res.redirect(`${redirectUrl}/home`);
 });
