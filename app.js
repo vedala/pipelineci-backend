@@ -50,6 +50,7 @@ app.get("/organizations", authorize, async (req, res) => {
 });
 
 app.post("/organizations", authorize, async (req, res) => {
+  console.log("req.body=", req.body);
   const organizationName = req.body.orgName;
   const userId = req.body.userId;
   const insertOrgsResponse = await knex(process.env.ORGANIZATIONS_TABLE_NAME)
