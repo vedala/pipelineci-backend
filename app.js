@@ -79,6 +79,17 @@ app.post("/projects", authorize, async (req, res) => {
   res.send(JSON.stringify(insertProjectsResponse[0]));
 });
 
+app.get("/projects", authorize, async (req, res) => {
+  const orgId = req.query.orgId;
+  const rows = await knex(process.env.AUTHORIZED_REPOS_TABLE_NAME)
+    .select('id', 'name')
+    .where('organization_id', orgId)
+    .orderBy('id')
+    .catch((err) => { console.error(err); throw err; });
+
+  res.send(rows);
+});
+
 app.get("/setup-endpoint", async (req, res) => {
   // const installationId = req.query?.installation_id;
 //   const setupAction = req.query?.setup_action;
