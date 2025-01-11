@@ -90,6 +90,17 @@ app.get("/projects", authorize, async (req, res) => {
   res.send(rows);
 });
 
+app.get("/runs", authorize, async (req, res) => {
+  const projectId = req.query.projectId;
+  const rows = await knex(process.env.RUNS_TABLE_NAME)
+    .select('id', 'sha', 'branch')
+    .where('project_id', projectId)
+    .orderBy('id', 'desc')
+    .catch((err) => { console.error(err); throw err; });
+
+  res.send(rows);
+});
+
 app.get("/setup-endpoint", async (req, res) => {
   // const installationId = req.query?.installation_id;
 //   const setupAction = req.query?.setup_action;
