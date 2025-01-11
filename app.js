@@ -64,21 +64,6 @@ app.post("/organizations", authorize, async (req, res) => {
   res.send(JSON.stringify(insertOrgsResponse[0]));
 });
 
-app.post("/projects", authorize, async (req, res) => {
-  const projectName = req.body.projectName;
-  const projectRepo = req.body.projectRepo;
-
-  const insertProjectsResponse = await knex(process.env.PROJECTS_TABLE_NAME)
-    .insert({
-      name: projectName,
-      repo: projectRepo,
-    })
-    .returning('id')
-    .catch((err) => { console.error(err); throw err });
-
-  res.send(JSON.stringify(insertProjectsResponse[0]));
-});
-
 app.get("/projects", authorize, async (req, res) => {
   const orgId = req.query.orgId;
   const rows = await knex(process.env.AUTHORIZED_REPOS_TABLE_NAME)
