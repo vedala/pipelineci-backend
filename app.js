@@ -66,7 +66,7 @@ app.post("/organizations", authorize, async (req, res) => {
 
 app.get("/projects", authorize, async (req, res) => {
   const orgId = req.query.orgId;
-  const rows = await knex(process.env.AUTHORIZED_REPOS_TABLE_NAME)
+  const rows = await knex(process.env.PROJECTS_TABLE_NAME)
     .select('id', 'name')
     .where('organization_id', orgId)
     .orderBy('id')
