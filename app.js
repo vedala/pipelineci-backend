@@ -78,7 +78,7 @@ app.get("/projects", authorize, async (req, res) => {
 app.get("/runs", authorize, async (req, res) => {
   const projectId = req.query.projectId;
   const rows = await knex(process.env.RUNS_TABLE_NAME)
-    .select('id', 'sha', 'branch')
+    .select('id', 'sha', 'branch', 'status')
     .where('project_id', projectId)
     .orderBy('id', 'desc')
     .catch((err) => { console.error(err); throw err; });
