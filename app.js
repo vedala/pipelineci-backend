@@ -42,7 +42,11 @@ app.get("/health", async (req, res) => {
 });
 
 app.get("/organizations", authorize, async (req, res) => {
-    const rows = await knex(process.env.ORGANIZATIONS_TABLE_NAME).select('id', 'name')
+  const userId = req.query.userId;
+
+  const rows = await knex(process.env.ORGANIZATIONS_TABLE_NAME)
+    .select('id', 'name')
+    .where('user_id', userId)
     .orderBy('id')
     .catch((err) => { console.error(err); throw err; });
 
